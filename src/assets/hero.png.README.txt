@@ -1,0 +1,4 @@
+Place your hero portrait image here as "hero.png"
+
+This is the black-and-white stylized portrait photo you shared.
+Rename it to hero.png and place it in this folder (src/assets/).

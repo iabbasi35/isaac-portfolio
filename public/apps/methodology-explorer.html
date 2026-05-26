@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Methodology Explorer</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: transparent; margin: 0; min-height: 500px; display: flex; align-items: center; justify-content: center; }
+        .tab-pill { transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1); }
+        .content-card { animation: fadeInUp 0.4s cubic-bezier(0.23, 1, 0.32, 1) forwards; }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .hidden { display: none !important; }
+        .active-tab { color: white !important; }
+        .tab-indicator {
+            position: absolute;
+            background: #2e6db5;
+            border-radius: 9999px;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            z-index: 0;
+            box-shadow: 0 4px 12px rgba(46, 109, 181, 0.2);
+        }
+    </style>
+</head>
+<body>
+
+<div class="w-full max-w-4xl p-4 sm:p-8 mx-auto">
+    <!-- Tab Navigation -->
+    <div class="relative mb-12 flex justify-center gap-1 sm:gap-4 p-1.5 rounded-full border border-[#d1e4f9] bg-white shadow-sm max-w-2xl mx-auto" id="tab-container">
+        <!-- The Moving Pill -->
+        <div id="tab-indicator" class="tab-indicator"></div>
+
+        <button onclick="switchTab('waterfall', this)" class="relative flex-1 rounded-full py-3 px-2 text-sm sm:text-base font-bold transition-all duration-300 focus:outline-none cursor-pointer z-10 text-[#001544] active-tab">
+            Waterfall
+        </button>
+        <button onclick="switchTab('agile', this)" class="relative flex-1 rounded-full py-3 px-2 text-sm sm:text-base font-bold transition-all duration-300 focus:outline-none cursor-pointer z-10 text-[#001544]">
+            Agile
+        </button>
+        <button onclick="switchTab('wagile', this)" class="relative flex-1 rounded-full py-3 px-2 text-sm sm:text-base font-bold transition-all duration-300 focus:outline-none cursor-pointer z-10 text-[#001544]">
+            WAgile
+        </button>
+    </div>
+
+    <!-- Content Sections -->
+    <div id="content-container" class="min-h-[340px]">
+        <!-- Waterfall -->
+        <div id="waterfall" class="content-card space-y-10">
+            <div class="max-w-2xl mx-auto text-center">
+                <p class="text-lg sm:text-xl font-medium leading-relaxed opacity-90 text-[#001544]">
+                    A structured approach where all planning is completed upfront, and work is delivered in a defined, sequential flow with limited flexibility.
+                </p>
+            </div>
+            <div class="grid w-full grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="flex items-start gap-4 p-5 rounded-2xl bg-[#f8fbfe] border border-[#d1e4f9]/30 hover:border-[#94d0f1] transition-all hover:bg-white hover:shadow-lg group">
+                    <div class="mt-1 flex-shrink-0"><div class="flex h-6 w-6 items-center justify-center rounded-full bg-[#d1e4f9] text-[#2e6db5] group-hover:bg-[#2e6db5] group-hover:text-white transition-all transform group-hover:scale-110"><i data-lucide="check" class="w-3.5 h-3.5"></i></div></div>
+                    <span class="text-sm sm:text-base font-semibold">Detailed scope, timeline, and budget defined early</span>
+                </div>
+                <div class="flex items-start gap-4 p-5 rounded-2xl bg-[#f8fbfe] border border-[#d1e4f9]/30 hover:border-[#94d0f1] transition-all hover:bg-white hover:shadow-lg group">
+                    <div class="mt-1 flex-shrink-0"><div class="flex h-6 w-6 items-center justify-center rounded-full bg-[#d1e4f9] text-[#2e6db5] group-hover:bg-[#2e6db5] group-hover:text-white transition-all transform group-hover:scale-110"><i data-lucide="check" class="w-3.5 h-3.5"></i></div></div>
+                    <span class="text-sm sm:text-base font-semibold">Work progresses in sequential phases</span>
+                </div>
+                <div class="flex items-start gap-4 p-5 rounded-2xl bg-[#f8fbfe] border border-[#d1e4f9]/30 hover:border-[#94d0f1] transition-all hover:bg-white hover:shadow-lg group">
+                    <div class="mt-1 flex-shrink-0"><div class="flex h-6 w-6 items-center justify-center rounded-full bg-[#d1e4f9] text-[#2e6db5] group-hover:bg-[#2e6db5] group-hover:text-white transition-all transform group-hover:scale-110"><i data-lucide="check" class="w-3.5 h-3.5"></i></div></div>
+                    <span class="text-sm sm:text-base font-semibold">Changes are difficult once execution begins</span>
+                </div>
+                <div class="flex items-start gap-4 p-5 rounded-2xl bg-[#f8fbfe] border border-[#d1e4f9]/30 hover:border-[#94d0f1] transition-all hover:bg-white hover:shadow-lg group">
+                    <div class="mt-1 flex-shrink-0"><div class="flex h-6 w-6 items-center justify-center rounded-full bg-[#d1e4f9] text-[#2e6db5] group-hover:bg-[#2e6db5] group-hover:text-white transition-all transform group-hover:scale-110"><i data-lucide="check" class="w-3.5 h-3.5"></i></div></div>
+                    <span class="text-sm sm:text-base font-semibold">Final delivery occurs at the end of the project</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Agile -->
+        <div id="agile" class="content-card hidden space-y-10">
+            <div class="max-w-2xl mx-auto text-center">
+                <p class="text-lg sm:text-xl font-medium leading-relaxed opacity-90 text-[#001544]">
+                    An iterative approach with minimal upfront planning, where work is delivered in increments and adjusted continuously based on feedback.
+                </p>
+            </div>
+            <div class="grid w-full grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="flex items-start gap-4 p-5 rounded-2xl bg-[#f8fbfe] border border-[#d1e4f9]/30 hover:border-[#94d0f1] transition-all hover:bg-white hover:shadow-lg group">
+                    <div class="mt-1 flex-shrink-0"><div class="flex h-6 w-6 items-center justify-center rounded-full bg-[#d1e4f9] text-[#2e6db5] group-hover:bg-[#2e6db5] group-hover:text-white transition-all transform group-hover:scale-110"><i data-lucide="check" class="w-3.5 h-3.5"></i></div></div>
+                    <span class="text-sm sm:text-base font-semibold">Limited upfront planning</span>
+                </div>
+                <div class="flex items-start gap-4 p-5 rounded-2xl bg-[#f8fbfe] border border-[#d1e4f9]/30 hover:border-[#94d0f1] transition-all hover:bg-white hover:shadow-lg group">
+                    <div class="mt-1 flex-shrink-0"><div class="flex h-6 w-6 items-center justify-center rounded-full bg-[#d1e4f9] text-[#2e6db5] group-hover:bg-[#2e6db5] group-hover:text-white transition-all transform group-hover:scale-110"><i data-lucide="check" class="w-3.5 h-3.5"></i></div></div>
+                    <span class="text-sm sm:text-base font-semibold">Work delivered in sprints or iterations</span>
+                </div>
+                <div class="flex items-start gap-4 p-5 rounded-2xl bg-[#f8fbfe] border border-[#d1e4f9]/30 hover:border-[#94d0f1] transition-all hover:bg-white hover:shadow-lg group">
+                    <div class="mt-1 flex-shrink-0"><div class="flex h-6 w-6 items-center justify-center rounded-full bg-[#d1e4f9] text-[#2e6db5] group-hover:bg-[#2e6db5] group-hover:text-white transition-all transform group-hover:scale-110"><i data-lucide="check" class="w-3.5 h-3.5"></i></div></div>
+                    <span class="text-sm sm:text-base font-semibold">Continuous feedback and stakeholder involvement</span>
+                </div>
+                <div class="flex items-start gap-4 p-5 rounded-2xl bg-[#f8fbfe] border border-[#d1e4f9]/30 hover:border-[#94d0f1] transition-all hover:bg-white hover:shadow-lg group">
+                    <div class="mt-1 flex-shrink-0"><div class="flex h-6 w-6 items-center justify-center rounded-full bg-[#d1e4f9] text-[#2e6db5] group-hover:bg-[#2e6db5] group-hover:text-white transition-all transform group-hover:scale-110"><i data-lucide="check" class="w-3.5 h-3.5"></i></div></div>
+                    <span class="text-sm sm:text-base font-semibold">Scope evolves throughout the project</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- WAgile -->
+        <div id="wagile" class="content-card hidden space-y-10">
+            <div class="max-w-2xl mx-auto text-center">
+                <p class="text-lg sm:text-xl font-medium leading-relaxed opacity-90 text-[#001544]">
+                    A hybrid approach that combines upfront planning with iterative execution—providing structure while allowing for controlled flexibility.
+                </p>
+            </div>
+            <div class="grid w-full grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="flex items-start gap-4 p-5 rounded-2xl bg-[#f8fbfe] border border-[#d1e4f9]/30 hover:border-[#94d0f1] transition-all hover:bg-white hover:shadow-lg group">
+                    <div class="mt-1 flex-shrink-0"><div class="flex h-6 w-6 items-center justify-center rounded-full bg-[#d1e4f9] text-[#2e6db5] group-hover:bg-[#2e6db5] group-hover:text-white transition-all transform group-hover:scale-110"><i data-lucide="check" class="w-3.5 h-3.5"></i></div></div>
+                    <span class="text-sm sm:text-base font-semibold">Scope, features, and estimates defined upfront</span>
+                </div>
+                <div class="flex items-start gap-4 p-5 rounded-2xl bg-[#f8fbfe] border border-[#d1e4f9]/30 hover:border-[#94d0f1] transition-all hover:bg-white hover:shadow-lg group">
+                    <div class="mt-1 flex-shrink-0"><div class="flex h-6 w-6 items-center justify-center rounded-full bg-[#d1e4f9] text-[#2e6db5] group-hover:bg-[#2e6db5] group-hover:text-white transition-all transform group-hover:scale-110"><i data-lucide="check" class="w-3.5 h-3.5"></i></div></div>
+                    <span class="text-sm sm:text-base font-semibold">Work delivered in phases or sprints</span>
+                </div>
+                <div class="flex items-start gap-4 p-5 rounded-2xl bg-[#f8fbfe] border border-[#d1e4f9]/30 hover:border-[#94d0f1] transition-all hover:bg-white hover:shadow-lg group">
+                    <div class="mt-1 flex-shrink-0"><div class="flex h-6 w-6 items-center justify-center rounded-full bg-[#d1e4f9] text-[#2e6db5] group-hover:bg-[#2e6db5] group-hover:text-white transition-all transform group-hover:scale-110"><i data-lucide="check" class="w-3.5 h-3.5"></i></div></div>
+                    <span class="text-sm sm:text-base font-semibold">Changes managed through a structured process</span>
+                </div>
+                <div class="flex items-start gap-4 p-5 rounded-2xl bg-[#f8fbfe] border border-[#d1e4f9]/30 hover:border-[#94d0f1] transition-all hover:bg-white hover:shadow-lg group">
+                    <div class="mt-1 flex-shrink-0"><div class="flex h-6 w-6 items-center justify-center rounded-full bg-[#d1e4f9] text-[#2e6db5] group-hover:bg-[#2e6db5] group-hover:text-white transition-all transform group-hover:scale-110"><i data-lucide="check" class="w-3.5 h-3.5"></i></div></div>
+                    <span class="text-sm sm:text-base font-semibold">Regular stakeholder check-ins and alignment</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Decorative Bottom Accent -->
+    <div class="mt-16 flex justify-center">
+        <div class="h-0.5 w-16 rounded-full bg-[#94d0f1] opacity-30"></div>
+    </div>
+</div>
+
+<script>
+    lucide.createIcons();
+
+    function moveIndicator(button) {
+        const indicator = document.getElementById('tab-indicator');
+        const container = document.getElementById('tab-container');
+        const btnRect = button.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        indicator.style.width = btnRect.width + 'px';
+        indicator.style.height = btnRect.height + 'px';
+        indicator.style.left = (btnRect.left - containerRect.left) + 'px';
+        indicator.style.top = (btnRect.top - containerRect.top) + 'px';
+    }
+
+    function switchTab(id, button) {
+        document.querySelectorAll('button').forEach(btn => btn.classList.remove('active-tab'));
+        button.classList.add('active-tab');
+        moveIndicator(button);
+        document.querySelectorAll('.content-card').forEach(card => card.classList.add('hidden'));
+        document.getElementById(id).classList.remove('hidden');
+    }
+
+    window.onload = () => {
+        const firstBtn = document.querySelector('button');
+        moveIndicator(firstBtn);
+    };
+</script>
+
+</body>
+</html>

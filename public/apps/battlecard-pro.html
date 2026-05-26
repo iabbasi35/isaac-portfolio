@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Deal Desk Duel</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: 'Inter', system-ui, sans-serif; background:#0b1020; color:#e6e9f5; }
+  .card { background:#141a33; border:1px solid #243056; border-radius:14px; }
+  .btn { padding:.6rem 1rem; border-radius:10px; font-weight:600; transition:all .15s; }
+  .btn-primary { background:#6366f1; color:white; }
+  .btn-primary:hover { background:#4f46e5; }
+  .btn-success { background:#10b981; color:white; }
+  .btn-warn { background:#f59e0b; color:#1a1300; }
+  .btn-danger { background:#ef4444; color:white; }
+  .btn-ghost { background:#243056; color:#e6e9f5; }
+  .btn:disabled { opacity:.4; cursor:not-allowed; }
+  .risk-high { color:#fca5a5; }
+  .risk-medium { color:#fcd34d; }
+  .risk-low { color:#86efac; }
+  .fade-in { animation: fade .35s ease-out; }
+  @keyframes fade { from { opacity:0; transform: translateY(8px);} to {opacity:1; transform:none;} }
+  .chip { display:inline-block; padding:.15rem .55rem; border-radius:999px; font-size:.75rem; background:#243056; }
+  .flag { background:#3b1d1d; color:#fca5a5; }
+</style>
+</head>
+<body>
+<div id="app" class="max-w-2xl mx-auto p-4 md:p-8"></div>
+
+<script>
+const DEALS = [
+  {
+    id:'fastpay', name:'FastPay Crypto', industry:'Crypto Exchange', geo:'Singapore', volume:'$50M/mo',
+    revenue:85000, risk:'high',
+    visible:[['Founded','2021'],['Employees','45'],['Request','High-volume payments'],['Market','Emerging markets ⚠'],['Urgency','48-hour decision ⚠']],
+    questions:[
+      {q:"What's their compliance status?", opts:['Fully licensed','License pending approval','Operating under exemption'], correct:1, reveal:'MAS license still pending - provisional status.'},
+      {q:'Any regulatory actions?', opts:['Clean record','Minor warnings','Warning letter from Thai SEC'], correct:2, reveal:'Thai SEC warning in 2023 re: KYC.'},
+      {q:'Chargeback rate?', opts:['Below average','Industry avg (0.8%)','Above avg (4.2%)'], correct:2, reveal:'4.2% — 5x industry average.'},
+    ],
+    outcomes:{
+      approve:{points:-50, revenue:-120000, optimal:false, event:'Massive fraud event after 3 months. Regulators investigating.', why:'High chargebacks and pending compliance were red flags.'},
+      modify:{points:80, revenue:35000, optimal:true, event:'Some chargebacks but contained via staged rollout.', why:'Smart: staged rollout limited exposure while capturing revenue.'},
+      reject:{points:40, revenue:0, optimal:false, event:null, why:'Safe choice, but a modified deal could have captured some upside.'},
+    },
+  },
+  {
+    id:'greenlend', name:'GreenLend Credit', industry:'Sustainable Lending', geo:'Berlin, EU', volume:'$15M/mo',
+    revenue:42000, risk:'medium',
+    visible:[['Founded','2019'],['Employees','28'],['Request','Loan disbursements'],['Cert','B-Corp ✓'],['Funding','Series A — $8M']],
+    questions:[
+      {q:'EU regulatory status?', opts:['Full BaFin authorization','Transitional provisions','Application pending'], correct:0, reveal:'Full BaFin authorization, GDPR compliant.'},
+      {q:'Financial runway?', opts:['<6 months','12-18 months','24+ months'], correct:1, reveal:'14 months runway, 40% YoY growth, Series B in talks.'},
+      {q:'Loan default rate?', opts:['Above avg','At avg','Below avg (2.1%)'], correct:2, reveal:'2.1% vs 3.8% industry avg thanks to AI underwriting.'},
+    ],
+    outcomes:{
+      approve:{points:100, revenue:42000, optimal:true, event:null, why:'Ideal partner. Strong compliance, sustainable growth, two referrals.'},
+      modify:{points:50, revenue:28000, optimal:false, event:null, why:'Restrictive terms frustrated a clean client — money left on table.'},
+      reject:{points:-20, revenue:0, optimal:false, event:'Competitor signed them.', why:'Missed opportunity — they became a top client elsewhere.'},
+    },
+  },
+  {
+    id:'metrobank', name:'MetroBank Express', industry:'Regional Banking', geo:'Ohio, USA', volume:'$120M/mo',
+    revenue:38000, risk:'low',
+    visible:[['Founded','1987'],['Employees','450'],['Request','ACH & wire services'],['Assets','$2.4B AUM'],['Rating','CAMEL: 2 (Good)']],
+    questions:[
+      {q:'Regulatory standing?', opts:['Full FDIC/OCC','State-chartered only','Enhanced supervision'], correct:0, reveal:'Full FDIC member, OCC regulated, excellent record.'},
+      {q:'Any historical issues?', opts:['Multiple enforcement','Minor 2008 CRA finding','Completely clean'], correct:1, reveal:'Minor 2008 CRA finding, remediated. Clean 15 years.'},
+      {q:'Business stability?', opts:['Declining share','Flat growth','Profitable 30 years'], correct:2, reveal:'Profitable 30 straight years, 3-5% annual growth.'},
+    ],
+    outcomes:{
+      approve:{points:60, revenue:38000, optimal:true, event:null, why:'Solid, reliable, long-term client. Safe and steady.'},
+      modify:{points:20, revenue:25000, optimal:false, event:null, why:'Extra requirements puzzled a clearly stable institution.'},
+      reject:{points:-30, revenue:0, optimal:false, event:'Damaged reputation with regional banks.', why:'Rejecting an excellent partner sent the wrong market signal.'},
+    },
+  },
+];
+
+const TOKENS = 3;
+const STORE = 'deal-desk-duel-html';
+let state = load();
+
+function load(){
+  try{ const s = JSON.parse(localStorage.getItem(STORE)||'null'); if(s) return s; }catch(e){}
+  return fresh();
+}
+function fresh(){ return { phase:'welcome', idx:0, score:0, streak:0, best:0, tokens:TOKENS, revealed:[], lastDecision:null, high: (JSON.parse(localStorage.getItem(STORE)||'{}').high)||0 }; }
+function save(){ localStorage.setItem(STORE, JSON.stringify(state)); }
+function setPhase(p){ state.phase=p; save(); render(); }
+
+const app = document.getElementById('app');
+function el(html){ const d=document.createElement('div'); d.innerHTML=html.trim(); return d.firstChild; }
+
+function render(){
+  app.innerHTML='';
+  if(state.phase==='welcome') return renderWelcome();
+  if(state.phase==='tutorial') return renderTutorial();
+  if(state.phase==='results') return renderResults();
+  renderGame();
+}
+
+function renderWelcome(){
+  app.appendChild(el(`
+    <div class="fade-in text-center space-y-6 mt-12">
+      <div class="text-6xl">🎯</div>
+      <h1 class="text-4xl md:text-5xl font-bold">Deal Desk Duel</h1>
+      <p class="text-lg text-slate-300">FinTech Sales & Risk Alignment</p>
+      <div class="card p-6 text-left space-y-2">
+        <p>You're a Deal Desk Manager. Review enterprise FinTech deals, investigate the risk, and decide: <b>Approve</b>, <b>Modify</b>, or <b>Reject</b>.</p>
+        <p class="text-sm text-slate-400">Maximize revenue. Minimize blow-ups.</p>
+      </div>
+      ${state.high?`<p class="text-amber-300">🏆 High Score: ${state.high}</p>`:''}
+      <button id="start" class="btn btn-primary text-lg px-8 py-3">Start Game →</button>
+    </div>`));
+  document.getElementById('start').onclick=()=>{ Object.assign(state, fresh(), {phase:'tutorial', high: state.high}); save(); render(); };
+}
+
+function renderTutorial(){
+  app.appendChild(el(`
+    <div class="fade-in space-y-4">
+      <h2 class="text-3xl font-bold">How to Play</h2>
+      <div class="card p-5 space-y-3">
+        <p>📋 <b>Review</b> each deal brief — only partial info is visible.</p>
+        <p>🔍 <b>Investigate</b>: spend up to <b>${TOKENS} question tokens</b> per deal to uncover hidden info.</p>
+        <p>⚖️ <b>Decide</b>: Approve, Modify terms, or Reject.</p>
+        <p>📈 <b>Outcome</b>: instant feedback — points, revenue impact, risk events.</p>
+        <p>🔥 Optimal decisions build a <b>streak</b> with bonus points!</p>
+      </div>
+      <button id="go" class="btn btn-primary w-full">I'm Ready →</button>
+    </div>`));
+  document.getElementById('go').onclick=()=>setPhase('deal-review');
+}
+
+function renderGame(){
+  const deal = DEALS[state.idx];
+  app.appendChild(el(`
+    <div class="flex justify-between items-center mb-4 fade-in">
+      <div class="card px-4 py-2 text-sm">Deal <b>${state.idx+1}</b> / ${DEALS.length}</div>
+      <div class="card px-4 py-2 text-sm">Score: <b class="text-emerald-300">${state.score}</b></div>
+      <div class="card px-4 py-2 text-sm">🔥 ${state.streak}</div>
+    </div>`));
+
+  // Deal card
+  app.appendChild(el(`
+    <div class="card p-5 mb-4 fade-in">
+      <div class="flex justify-between items-start mb-2">
+        <div>
+          <h2 class="text-2xl font-bold">${deal.name}</h2>
+          <p class="text-slate-400 text-sm">${deal.industry} · ${deal.geo}</p>
+        </div>
+        <span class="chip risk-${deal.risk}">${deal.risk.toUpperCase()} RISK</span>
+      </div>
+      <div class="grid grid-cols-2 gap-2 mt-4 text-sm">
+        <div class="bg-slate-900/40 p-2 rounded"><div class="text-slate-400 text-xs">Volume</div><div>${deal.volume}</div></div>
+        <div class="bg-slate-900/40 p-2 rounded"><div class="text-slate-400 text-xs">Revenue Potential</div><div class="text-emerald-300">$${deal.revenue.toLocaleString()}</div></div>
+        ${deal.visible.map(([k,v])=>`<div class="bg-slate-900/40 p-2 rounded ${/⚠/.test(v)?'flag':''}"><div class="text-xs opacity-70">${k}</div><div>${v}</div></div>`).join('')}
+      </div>
+    </div>`));
+
+  if(state.phase==='deal-review'){
+    const b = el(`<button class="btn btn-primary w-full">🔍 Investigate This Deal</button>`);
+    b.onclick=()=>setPhase('investigation');
+    app.appendChild(b);
+  }
+  if(state.phase==='investigation'){
+    const wrap = el(`<div class="card p-5 fade-in"><div class="flex justify-between mb-3"><h3 class="font-bold">Investigation</h3><span class="chip">🎟 ${state.tokens} tokens left</span></div></div>`);
+    deal.questions.forEach((q,i)=>{
+      const seen = state.revealed.find(r=>r.qi===i);
+      const qDiv = el(`<div class="border-t border-slate-700 pt-3 mt-3"><p class="font-medium">${q.q}</p></div>`);
+      if(seen){
+        qDiv.appendChild(el(`<div class="mt-2 p-2 rounded bg-slate-900/60 text-sm"><div class="text-slate-400">Your guess: ${q.opts[seen.choice]} ${seen.choice===q.correct?'✅':'❌'}</div><div class="mt-1 text-amber-200">${q.reveal}</div></div>`));
+      } else if(state.tokens>0){
+        const optWrap = el(`<div class="mt-2 space-y-1"></div>`);
+        q.opts.forEach((o,oi)=>{
+          const ob = el(`<button class="btn btn-ghost w-full text-left text-sm">${o}</button>`);
+          ob.onclick=()=>{ state.tokens--; state.revealed.push({qi:i, choice:oi}); save(); render(); };
+          optWrap.appendChild(ob);
+        });
+        qDiv.appendChild(optWrap);
+      } else {
+        qDiv.appendChild(el(`<p class="text-xs text-slate-500 mt-1">No tokens left</p>`));
+      }
+      wrap.appendChild(qDiv);
+    });
+    const cont = el(`<button class="btn btn-primary w-full mt-4">Continue to Decision →</button>`);
+    cont.onclick=()=>setPhase('decision');
+    wrap.appendChild(cont);
+    app.appendChild(wrap);
+  }
+  if(state.phase==='decision'){
+    const wrap = el(`<div class="card p-5 fade-in"><h3 class="font-bold mb-3">Your Decision on ${deal.name}</h3><div class="grid gap-2"></div></div>`);
+    const grid = wrap.querySelector('.grid');
+    [['approve','✅ Approve','btn-success'],['modify','⚖️ Modify Terms','btn-warn'],['reject','❌ Reject','btn-danger']].forEach(([d,label,cls])=>{
+      const b = el(`<button class="btn ${cls} w-full">${label}</button>`);
+      b.onclick=()=>decide(d);
+      grid.appendChild(b);
+    });
+    app.appendChild(wrap);
+  }
+  if(state.phase==='outcome'){
+    const o = deal.outcomes[state.lastDecision];
+    let pts = o.points;
+    if(o.optimal && state.streak>1) pts = Math.round(pts*1.25);
+    app.appendChild(el(`
+      <div class="card p-5 fade-in space-y-3 border-2 ${o.optimal?'border-emerald-500':'border-rose-500'}">
+        <h3 class="text-2xl font-bold">${o.optimal?'🎉 Optimal Call':'😬 Not Optimal'}</h3>
+        <div class="grid grid-cols-2 gap-2">
+          <div class="bg-slate-900/40 p-3 rounded"><div class="text-xs text-slate-400">Points</div><div class="text-2xl font-bold ${pts>=0?'text-emerald-300':'text-rose-300'}">${pts>=0?'+':''}${pts}</div></div>
+          <div class="bg-slate-900/40 p-3 rounded"><div class="text-xs text-slate-400">Revenue</div><div class="text-2xl font-bold ${o.revenue>=0?'text-emerald-300':'text-rose-300'}">${o.revenue>=0?'+':'-'}$${Math.abs(o.revenue).toLocaleString()}</div></div>
+        </div>
+        ${o.event?`<div class="p-3 rounded bg-rose-900/30 text-rose-200 text-sm">⚠ ${o.event}</div>`:''}
+        <p class="text-slate-300 text-sm">${o.why}</p>
+        <button id="next" class="btn btn-primary w-full">${state.idx>=DEALS.length-1?'See Final Results →':'Next Deal →'}</button>
+      </div>`));
+    document.getElementById('next').onclick=nextDeal;
+  }
+}
+
+function decide(d){
+  const deal = DEALS[state.idx];
+  const o = deal.outcomes[d];
+  let pts = o.points;
+  if(o.optimal && state.streak>0) pts = Math.round(pts*1.25);
+  state.score += pts;
+  state.streak = o.optimal ? state.streak+1 : 0;
+  state.best = Math.max(state.best, state.streak);
+  state.lastDecision = d;
+  setPhase('outcome');
+}
+
+function nextDeal(){
+  if(state.idx >= DEALS.length-1){
+    state.high = Math.max(state.high, state.score);
+    setPhase('results');
+  } else {
+    state.idx++; state.tokens=TOKENS; state.revealed=[]; state.lastDecision=null;
+    setPhase('deal-review');
+  }
+}
+
+function renderResults(){
+  const tier = state.score>=200?'🏆 Master Deal Desk':state.score>=100?'⭐ Skilled Negotiator':state.score>=50?'👍 Solid Effort':'📉 Back to Training';
+  app.appendChild(el(`
+    <div class="fade-in text-center space-y-5 mt-8">
+      <h2 class="text-4xl font-bold">${tier}</h2>
+      <div class="card p-6 space-y-2">
+        <div class="text-5xl font-bold text-emerald-300">${state.score}</div>
+        <div class="text-slate-400">Final Score</div>
+        <div class="grid grid-cols-2 gap-2 mt-4">
+          <div class="bg-slate-900/40 p-3 rounded"><div class="text-xs text-slate-400">Best Streak</div><div class="text-xl font-bold">🔥 ${state.best}</div></div>
+          <div class="bg-slate-900/40 p-3 rounded"><div class="text-xs text-slate-400">High Score</div><div class="text-xl font-bold text-amber-300">🏆 ${state.high}</div></div>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <button id="again" class="btn btn-primary flex-1">Play Again</button>
+        <button id="reset" class="btn btn-ghost">Reset All</button>
+      </div>
+    </div>`));
+  document.getElementById('again').onclick=()=>{ const h=state.high; Object.assign(state, fresh(), {phase:'deal-review', high:h}); save(); render(); };
+  document.getElementById('reset').onclick=()=>{ localStorage.removeItem(STORE); state=fresh(); render(); };
+}
+
+render();
+</script>
+</body>
+</html>
