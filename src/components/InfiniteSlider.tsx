@@ -37,7 +37,7 @@ export function InfiniteSlider({
 
     if (isTransitioning) {
       controls = animate(translation, [translation.get(), to], {
-        ease: 'linear',
+        ease: 'linear' as const,
         duration: currentDuration * Math.abs((translation.get() - to) / contentSize),
         onComplete: () => {
           setIsTransitioning(false)
@@ -46,7 +46,7 @@ export function InfiniteSlider({
       })
     } else {
       controls = animate(translation, [from, to], {
-        ease: 'linear',
+        ease: 'linear' as const,
         duration: currentDuration,
         repeat: Infinity,
         repeatType: 'loop',

@@ -32,7 +32,7 @@ const container = {
 
 const item = {
   hidden: { y: 28, opacity: 0 },
-  visible: { y: 0, opacity: 1, transition: { duration: 0.55, ease: 'easeOut' } },
+  visible: { y: 0, opacity: 1, transition: { duration: 0.55, ease: 'easeOut' as const } },
 }
 
 export function ValueProps() {

@@ -25,7 +25,7 @@ export function GradientBackground() {
         delay: 0.3,
         duration: 10,
         repeat: Infinity,
-        ease: 'easeInOut',
+        ease: 'easeInOut' as const,
       }}
     />
   )
